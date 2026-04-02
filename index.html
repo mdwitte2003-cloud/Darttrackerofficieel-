@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dart Competitie</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f2ff;
+    --muted: #7b82a0;
+    --accent: #e8c840;
+    --accent2: #f0dc7a;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --orange: #fb923c;
+    --r: 8px;
+    --r2: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; min-height: 100vh; }
+
+  header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; gap: 1.5rem; background: var(--surface); }
+  .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; padding: 1.2rem 0; white-space: nowrap; }
+  .logo span { color: var(--muted); font-weight: 400; }
+  nav { display: flex; gap: 0; margin-left: auto; }
+  nav button { background: none; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0.05em; color: var(--muted); padding: 1.4rem 1.2rem; border-bottom: 2px solid transparent; transition: all 0.15s; text-transform: uppercase; }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.25rem 1.5rem; }
+  .card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+
+  .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.2rem; }
+  .metric-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .metric-value { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; line-height: 1; }
+  .metric-value.accent { color: var(--accent); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  td { padding: 10px 12px; vertical-align: middle; }
+  .rank-num { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--muted); width: 36px; }
+  .rank-num.top1 { color: var(--accent); }
+  .rank-num.top2 { color: #c0c8d8; }
+  .rank-num.top3 { color: #cd9b6a; }
+  .player-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+  .pts { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.05em; }
+  .badge-w { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-l { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-draw { background: rgba(123,130,160,0.15); color: var(--muted); }
+  .streak-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px; font-family: 'Barlow Condensed', sans-serif; }
+  .streak-w { background: rgba(74,222,128,0.12); color: var(--green); }
+  .streak-l { background: rgba(248,113,113,0.12); color: var(--red); }
+  .leg-diff { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; }
+  .leg-diff.pos { color: var(--green); }
+  .leg-diff.neg { color: var(--red); }
+  .leg-diff.zero { color: var(--muted); }
+  .form-dots { display: flex; gap: 4px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-w { background: var(--green); }
+  .dot-l { background: var(--red); }
+  .dot-x { background: var(--border2); }
+
+  /* DAG WINNAAR */
+  .dag-section { margin-bottom: 1.5rem; }
+  .dag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 12px; }
+  .dag-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 1rem 1.2rem; display: flex; align-items: center; gap: 14px; }
+  .dag-card.dag-winner { border-color: rgba(232,200,64,0.3); background: rgba(232,200,64,0.05); }
+  .dag-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; background: rgba(232,200,64,0.15); color: var(--accent); flex-shrink: 0; }
+  .dag-info { flex: 1; min-width: 0; }
+  .dag-date { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  .dag-name { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; }
+  .dag-sub { font-size: 12px; color: var(--muted); }
+  .dag-trophy { font-size: 22px; }
+
+  /* H2H REVAMP */
+  .h2h-wrap { overflow-x: auto; }
+  .h2h-table { border-collapse: separate; border-spacing: 3px; font-size: 13px; }
+  .h2h-table th { background: var(--surface2); font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 8px 14px; text-align: center; border-radius: 6px; }
+  .h2h-table td { padding: 0; text-align: center; border-radius: 8px; min-width: 72px; }
+  .h2h-table .row-header { text-align: left; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; background: var(--surface2); padding: 10px 16px; border-radius: 6px; white-space: nowrap; }
+  .h2h-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: filter 0.15s, transform 0.1s; min-height: 58px; gap: 2px; position: relative; }
+  .h2h-cell:hover { filter: brightness(1.2); transform: scale(1.04); }
+  .h2h-cell-win { background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3); }
+  .h2h-cell-loss { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.2); }
+  .h2h-cell-even { background: rgba(232,200,64,0.08); border: 1px solid rgba(232,200,64,0.18); }
+  .h2h-cell-empty { background: rgba(255,255,255,0.02); border: 1px solid var(--border); cursor: default; }
+  .h2h-cell-self { background: rgba(255,255,255,0.02); cursor: default; }
+  .h2h-score-big { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+  .h2h-score-big.win { color: var(--green); }
+  .h2h-score-big.loss { color: var(--red); }
+  .h2h-score-big.even { color: var(--accent); }
+  .h2h-score-big.empty { color: var(--muted); }
+  .h2h-leg-ratio { font-size: 11px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; }
+  .h2h-pct { font-size: 11px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+  .h2h-pct.win { color: rgba(74,222,128,0.7); }
+  .h2h-pct.loss { color: rgba(248,113,113,0.6); }
+
+  /* H2H MODAL */
+  .h2h-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .h2h-modal-overlay.open { opacity: 1; pointer-events: all; }
+  .h2h-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r2); padding: 1.5rem; min-width: 320px; max-width: 480px; width: 90%; }
+  .h2h-modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; }
+  .h2h-modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
+  .h2h-modal-close:hover { color: var(--text); }
+
+  /* VENUE STATS */
+  .venue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 12px; }
+  .venue-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.2rem; }
+  .venue-name { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .venue-count { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .venue-king { font-size: 12px; color: var(--accent2); }
+
+  /* FORM / INVOER */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  .form-group input, .form-group select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; padding: 10px 12px; outline: none; transition: border-color 0.15s; width: 100%; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface2); }
+  .btn { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; border: none; border-radius: var(--r); cursor: pointer; padding: 10px 24px; transition: all 0.15s; }
+  .btn-accent { background: var(--accent); color: #0f1117; }
+  .btn-accent:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .btn-danger:hover { background: rgba(248,113,113,0.2); }
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* STEPPER (score +/-) */
+  .stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--border2); border-radius: var(--r); overflow: hidden; }
+  .stepper-btn { background: var(--surface2); border: none; color: var(--text); font-size: 20px; font-weight: 700; width: 40px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; flex-shrink: 0; line-height: 1; }
+  .stepper-btn:hover { background: var(--border2); }
+  .stepper-val { background: var(--surface2); border: none; border-left: 1px solid var(--border2); border-right: 1px solid var(--border2); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; text-align: center; width: 100%; height: 42px; outline: none; }
+
+  /* SWITCH BUTTON */
+  .switch-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r); color: var(--accent); font-size: 20px; cursor: pointer; padding: 8px 14px; transition: all 0.15s; align-self: flex-end; }
+  .switch-btn:hover { background: rgba(232,200,64,0.1); border-color: rgba(232,200,64,0.3); }
+
+  /* HISTORY */
+  .history-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .history-item:last-child { border-bottom: none; }
+  .history-date { font-size: 12px; color: var(--muted); min-width: 80px; }
+  .history-venue { font-size: 12px; color: var(--blue); background: rgba(96,165,250,0.1); padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .history-match { flex: 1; display: flex; align-items: center; gap: 10px; }
+  .history-winner { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; }
+  .history-score { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; color: var(--accent); background: rgba(232,200,64,0.1); padding: 2px 10px; border-radius: 4px; }
+  .history-loser { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; color: var(--muted); }
+  .del-btn { background: none; border: none; color: var(--border2); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; transition: color 0.15s; margin-left: auto; }
+  .del-btn:hover { color: var(--red); }
+
+  /* PLAYER MANAGE */
+  .player-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 14px; }
+  .player-chip button { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 15px; line-height: 1; padding: 0; }
+  .player-chip button:hover { color: var(--red); }
+  .chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+
+  /* PODIUM */
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 16px; margin-bottom: 2rem; }
+  .podium-col { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; }
+  .podium-avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; }
+  .podium-bar { width: 100%; border-radius: 6px 6px 0 0; display: flex; align-items: center; justify-content: center; }
+  .podium-bar-1 { background: rgba(232,200,64,0.2); border: 1px solid var(--accent); height: 100px; }
+  .podium-bar-2 { background: rgba(192,200,216,0.12); border: 1px solid rgba(192,200,216,0.3); height: 75px; }
+  .podium-bar-3 { background: rgba(205,155,106,0.12); border: 1px solid rgba(205,155,106,0.3); height: 55px; }
+  .podium-medal { font-size: 24px; }
+  .podium-name { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; }
+  .podium-pts { font-size: 12px; color: var(--muted); }
+  .av-1 { background: rgba(232,200,64,0.15); color: var(--accent); }
+  .av-2 { background: rgba(192,200,216,0.12); color: #c0c8d8; }
+  .av-3 { background: rgba(205,155,106,0.12); color: #cd9b6a; }
+  .av-other { background: var(--surface2); color: var(--muted); }
+
+  /* SECTION HEADING */
+  .sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .sec-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; }
+  .sec-desc { font-size: 13px; color: var(--muted); }
+  .section-gap { margin-bottom: 2rem; }
+
+  /* CHART / GRAFIEK */
+  .chart-container { position: relative; width: 100%; overflow-x: auto; }
+  .chart-svg { display: block; }
+  .chart-tooltip { position: fixed; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r); padding: 8px 12px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity 0.15s; white-space: nowrap; z-index: 200; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; cursor: pointer; padding: 3px 8px; border-radius: 20px; border: 1px solid transparent; transition: all 0.15s; user-select: none; }
+  .legend-item:hover { border-color: var(--border2); }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* CHART TABS */
+  .chart-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .chart-tab { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; color: var(--muted); padding: 4px 14px; cursor: pointer; transition: all 0.15s; }
+  .chart-tab:hover { color: var(--text); }
+  .chart-tab.active { background: rgba(232,200,64,0.12); border-color: rgba(232,200,64,0.3); color: var(--accent); }
+
+  @media (max-width: 640px) {
+    header { flex-wrap: wrap; padding: 0 1rem; }
+    nav { overflow-x: auto; width: 100%; }
+    nav button { padding: 1rem 0.8rem; font-size: 14px; }
+    .form-grid { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎯 DART<span>COMPETITIE</span></div>
+  <nav>
+    <button class="active" onclick="go('stand')">Stand</button>
+    <button onclick="go('h2h')">Onderlinge</button>
+    <button onclick="go('locaties')">Locaties</button>
+    <button onclick="go('stats')">Stats</button>
+    <button onclick="go('invoer')">Invoeren</button>
+    <button onclick="go('history')">Historie</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- STAND -->
+<div id="page-stand" class="page active">
+  <div id="podium-el"></div>
+  <div class="dag-section">
+    <div class="sec-head" style="margin-bottom:0.75rem;">
+      <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;">🏆 Dagwinnaars</h2>
+      <span class="sec-desc">Meeste overwinningen per avond</span>
+    </div>
+    <div id="dag-el" class="dag-grid"></div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Speler</th><th>Gespeeld</th><th>W</th><th>V</th>
+            <th>W%</th><th>Leg diff</th><th>Vorm</th><th>Streak</th>
+          </tr>
+        </thead>
+        <tbody id="stand-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- H2H -->
+<div id="page-h2h" class="page">
+  <div class="sec-head section-gap">
+    <div>
+      <h2>Onderlinge stand</h2>
+      <div class="sec-desc">Klik op een cel voor leg-details. Groen = winst, rood = verlies, goud = gelijk.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="h2h-wrap" id="h2h-el"></div>
+  </div>
+</div>
+
+<!-- LOCATIES -->
+<div id="page-locaties" class="page">
+  <div class="sec-head section-gap">
+    <div>
+      <h2>Locatie statistieken</h2>
+      <div class="sec-desc">Wie doet het goed waar?</div>
+    </div>
+  </div>
+  <div id="locaties-el"></div>
+</div>
+
+<!-- STATS -->
+<div id="page-stats" class="page">
+  <div class="sec-head section-gap"><h2>Statistieken</h2></div>
+  <div id="stats-el"></div>
+</div>
+
+<!-- INVOER -->
+<div id="page-invoer" class="page">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+
+    <div>
+      <div class="sec-head section-gap"><h2>🏆 Toernooi invoeren</h2></div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Stap 1 — Avond instellen</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Datum</label>
+            <input type="date" id="inp-date">
+          </div>
+          <div class="form-group">
+            <label>Locatie</label>
+            <input type="text" id="inp-venue" list="venue-list" placeholder="Bijv. Café De Kuil">
+            <datalist id="venue-list"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Stap 2 — Wedstrijd toevoegen</div>
+        <div style="margin-bottom:0.75rem;padding:8px 12px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="inp-no-winner" onchange="toggleNoWinner()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;">
+          <label for="inp-no-winner" style="font-size:13px;color:var(--muted);cursor:pointer;">Vrij potje / geen winnaar</label>
+        </div>
+
+        <!-- Normal match form -->
+        <div id="match-form">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-bottom:14px;">
+            <div class="form-group">
+              <label>Winnaar</label>
+              <select id="inp-winner"></select>
+            </div>
+            <button class="switch-btn" onclick="switchPlayers()" title="Omdraaien">⇄</button>
+            <div class="form-group">
+              <label>Verliezer</label>
+              <select id="inp-loser"></select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group">
+              <label>Score winnaar (legs)</label>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="stepScore('inp-sw',-1)">−</button>
+                <input class="stepper-val" type="number" id="inp-sw" min="0" max="9" value="2">
+                <button class="stepper-btn" onclick="stepScore('inp-sw',1)">+</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Score verliezer (legs)</label>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="stepScore('inp-sl',-1)">−</button>
+                <input class="stepper-val" type="number" id="inp-sl" min="0" max="9" value="1">
+                <button class="stepper-btn" onclick="stepScore('inp-sl',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No-winner form -->
+        <div id="no-winner-form" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-bottom:14px;">
+            <div class="form-group">
+              <label>Speler 1</label>
+              <select id="inp-p1"></select>
+            </div>
+            <div style="width:40px;"></div>
+            <div class="form-group">
+              <label>Speler 2</label>
+              <select id="inp-p2"></select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group">
+              <label>Score speler 1</label>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="stepScore('inp-s1',-1)">−</button>
+                <input class="stepper-val" type="number" id="inp-s1" min="0" max="9" value="1">
+                <button class="stepper-btn" onclick="stepScore('inp-s1',1)">+</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Score speler 2</label>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="stepScore('inp-s2',-1)">−</button>
+                <input class="stepper-val" type="number" id="inp-s2" min="0" max="9" value="1">
+                <button class="stepper-btn" onclick="stepScore('inp-s2',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:0.75rem;display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-ghost" onclick="queueMatch()">+ Toevoegen aan lijst</button>
+          <span id="queue-msg" style="font-size:13px;"></span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Stap 3 — Wedstrijden deze avond</span>
+          <span id="queue-count" style="font-family:'Barlow Condensed',sans-serif;font-size:16px;color:var(--accent);font-weight:700;">0</span>
+        </div>
+        <div id="queue-list" style="min-height:40px;">
+          <p style="color:var(--muted);font-size:13px;padding:4px 0;">Nog geen wedstrijden toegevoegd.</p>
+        </div>
+      </div>
+
+      <div id="dag-preview" style="display:none;" class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Dagwinnaar preview</div>
+        <div id="dag-preview-content"></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:0.5rem;">
+        <button class="btn btn-accent" onclick="saveSession()">💾 Hele avond opslaan</button>
+        <span id="inp-msg"></span>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-head section-gap"><h2>Spelers beheren</h2></div>
+      <div class="card">
+        <div class="chips-wrap" id="player-chips"></div>
+        <div style="display:flex;gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <input type="text" id="inp-player" placeholder="Naam nieuw speler...">
+          </div>
+          <button class="btn btn-ghost" onclick="addPlayer()" style="align-self:flex-end;">Toevoegen</button>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;" class="sec-head section-gap"><h2>Locaties beheren</h2></div>
+      <div class="card">
+        <div class="chips-wrap" id="venue-chips"></div>
+        <div style="display:flex;gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <input type="text" id="inp-venue-add" placeholder="Naam nieuwe locatie...">
+          </div>
+          <button class="btn btn-ghost" onclick="addVenue()" style="align-self:flex-end;">Toevoegen</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="page-history" class="page">
+  <div class="sec-head section-gap" style="justify-content:space-between;">
+    <h2>Wedstrijd historie</h2>
+    <div style="display:flex;gap:8px;">
+      <select id="filter-player" onchange="renderHistory()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);padding:6px 10px;font-family:'Barlow',sans-serif;font-size:14px;">
+        <option value="">Alle spelers</option>
+      </select>
+      <select id="filter-venue" onchange="renderHistory()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);padding:6px 10px;font-family:'Barlow',sans-serif;font-size:14px;">
+        <option value="">Alle locaties</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <div id="history-el"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- H2H MODAL -->
+<div class="h2h-modal-overlay" id="h2h-modal-overlay" onclick="closeH2HModal(event)">
+  <div class="h2h-modal" id="h2h-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="h2h-modal-title" id="h2h-modal-title">H2H Detail</div>
+      <button class="h2h-modal-close" onclick="document.getElementById('h2h-modal-overlay').classList.remove('open')">×</button>
+    </div>
+    <div id="h2h-modal-body"></div>
+  </div>
+</div>
+
+<div class="chart-tooltip" id="chart-tooltip"></div>
+
+<script>
+const KEY = 'dart_v2';
+
+let S = (() => {
+  try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e){}
+  return {
+    players: ['Senna','Daniel','Henk','Frits','Daan','Milan'],
+    venues: ['Thuis'],
+    results: []
+  };
+})();
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const pages = ['stand','h2h','locaties','stats','invoer','history'];
+  document.querySelectorAll('nav button')[pages.indexOf(page)].classList.add('active');
+  render();
+}
+
+function toggleNoWinner() {
+  const checked = document.getElementById('inp-no-winner').checked;
+  document.getElementById('match-form').style.display = checked ? 'none' : 'block';
+  document.getElementById('no-winner-form').style.display = checked ? 'block' : 'none';
+}
+
+function stepScore(id, delta) {
+  const el = document.getElementById(id);
+  const v = parseInt(el.value) || 0;
+  const min = parseInt(el.min) || 0;
+  const max = parseInt(el.max) || 9;
+  el.value = Math.min(max, Math.max(min, v + delta));
+}
+
+function switchPlayers() {
+  const w = document.getElementById('inp-winner');
+  const l = document.getElementById('inp-loser');
+  const tmp = w.value;
+  w.value = l.value;
+  l.value = tmp;
+}
+
+// ---- STATS CALC ----
+function calcStats() {
+  const s = {};
+  S.players.forEach(p => s[p] = {name:p,played:0,wins:0,losses:0,lw:0,ll:0,results:[],opponents:{},venues:{}});
+  S.results.forEach(r => {
+    if (r.noWinner) {
+      const p1 = s[r.p1], p2 = s[r.p2];
+      if (!p1 || !p2) return;
+      p1.played++; p1.lw += r.s1; p1.ll += r.s2; p1.results.push('L');
+      p2.played++; p2.lw += r.s2; p2.ll += r.s1; p2.results.push('L');
+      return;
+    }
+    const w = s[r.winner], l = s[r.loser];
+    if (!w || !l) return;
+    w.played++; w.wins++; w.lw += r.sw; w.ll += r.sl; w.results.push('W');
+    if (!w.opponents[r.loser]) w.opponents[r.loser] = {w:0,l:0,lw:0,ll:0};
+    w.opponents[r.loser].w++; w.opponents[r.loser].lw += r.sw; w.opponents[r.loser].ll += r.sl;
+    if (r.venue) { if (!w.venues[r.venue]) w.venues[r.venue] = {w:0,l:0}; w.venues[r.venue].w++; }
+    l.played++; l.losses++; l.lw += r.sl; l.ll += r.sw; l.results.push('L');
+    if (!l.opponents[r.winner]) l.opponents[r.winner] = {w:0,l:0,lw:0,ll:0};
+    l.opponents[r.winner].l++; l.opponents[r.winner].ll += r.sw; l.opponents[r.winner].lw += r.sl;
+    if (r.venue) { if (!l.venues[r.venue]) l.venues[r.venue] = {w:0,l:0}; l.venues[r.venue].l++; }
+  });
+  Object.values(s).forEach(p => {
+    p.pct = p.played ? Math.round(p.wins/p.played*100) : 0;
+    p.diff = p.lw - p.ll;
+    p.legPct = (p.lw + p.ll) > 0 ? Math.round(p.lw / (p.lw + p.ll) * 100) : 0;
+    const r5 = p.results.slice(-5);
+    let cnt = 0, last = r5[r5.length-1];
+    for (let i = r5.length-1; i>=0; i--) { if (r5[i]===last) cnt++; else break; }
+    p.streak = last ? {type:last, n:cnt} : null;
+  });
+  return s;
+}
+
+// Sort by win% (primary), then leg diff
+function sorted(stats) {
+  return Object.values(stats).sort((a,b) => b.pct-a.pct || b.diff-a.diff || b.wins-a.wins);
+}
+
+// ---- DAGWINNAARS ----
+function calcDagwinnaars() {
+  const byDate = {};
+  S.results.forEach(r => {
+    if (!r.date) return;
+    if (!byDate[r.date]) byDate[r.date] = {};
+    if (r.noWinner) return;
+    byDate[r.date][r.winner] = (byDate[r.date][r.winner]||0) + 1;
+  });
+  const dagwinnaars = [];
+  Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).forEach(([date, scores]) => {
+    if (!Object.keys(scores).length) return;
+    const max = Math.max(...Object.values(scores));
+    const winners = Object.entries(scores).filter(([,n])=>n===max).map(([p])=>p);
+    dagwinnaars.push({ date, winners, scores });
+  });
+  return dagwinnaars;
+}
+
+function renderDagwinnaars() {
+  const list = calcDagwinnaars();
+  if (!list.length) {
+    document.getElementById('dag-el').innerHTML = '<p style="color:var(--muted);font-size:14px;">Nog geen avonden met datum ingevoerd.</p>';
+    return;
+  }
+  const recent = list.slice(0, 6);
+  document.getElementById('dag-el').innerHTML = recent.map(({date, winners, scores}) => {
+    const dateObj = new Date(date);
+    const formatted = dateObj.toLocaleDateString('nl-NL', {weekday:'short',day:'numeric',month:'short'});
+    const isMultiple = winners.length > 1;
+    const scoreStr = Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`${p} ${n}W`).join(' · ');
+    return `<div class="dag-card ${!isMultiple?'dag-winner':''}">
+      <div class="dag-avatar">${isMultiple ? '🤝' : winners[0].slice(0,2).toUpperCase()}</div>
+      <div class="dag-info">
+        <div class="dag-date">${formatted}</div>
+        <div class="dag-name">${isMultiple ? winners.join(' & ') : winners[0]}</div>
+        <div class="dag-sub">${scoreStr}</div>
+      </div>
+      ${!isMultiple ? '<div class="dag-trophy">🏆</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ---- STAND ----
+function renderStand() {
+  const stats = calcStats();
+  const list = sorted(stats);
+
+  if (list.length >= 3 && S.results.length > 0) {
+    const [p1,p2,p3] = list;
+    const order = [
+      {p:p2,rank:2,bar:'podium-bar-2',av:'av-2',medal:'🥈'},
+      {p:p1,rank:1,bar:'podium-bar-1',av:'av-1',medal:'🥇'},
+      {p:p3,rank:3,bar:'podium-bar-3',av:'av-3',medal:'🥉'},
+    ];
+    document.getElementById('podium-el').innerHTML = `
+      <div class="podium" style="margin-bottom:2rem;">
+        ${order.map(({p,bar,av,medal}) => `
+          <div class="podium-col">
+            <div class="podium-avatar ${av}">${p.name.slice(0,2).toUpperCase()}</div>
+            <div class="podium-name">${p.name}</div>
+            <div class="podium-pts">${p.pct}%</div>
+            <div class="podium-bar ${bar}">${medal}</div>
+          </div>
+        `).join('')}
+      </div>`;
+  } else {
+    document.getElementById('podium-el').innerHTML = '';
+  }
+
+  renderDagwinnaars();
+
+  document.getElementById('stand-body').innerHTML = list.map((p,i) => {
+    const rnk = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const diff = p.diff > 0 ? `<span class="leg-diff pos">+${p.diff}</span>` : p.diff < 0 ? `<span class="leg-diff neg">${p.diff}</span>` : `<span class="leg-diff zero">0</span>`;
+    const form = [0,1,2,3,4].map(j => {
+      const r = p.results[p.results.length-5+j];
+      return r ? `<div class="dot ${r==='W'?'dot-w':'dot-l'}"></div>` : `<div class="dot dot-x"></div>`;
+    }).join('');
+    const streak = p.streak ? `<span class="streak-pill streak-${p.streak.type==='W'?'w':'l'}">${p.streak.type}${p.streak.n}</span>` : '<span style="color:var(--muted)">—</span>';
+    const pctCol = p.pct >= 60 ? 'var(--green)' : p.pct <= 40 ? 'var(--red)' : 'var(--text)';
+    return `<tr>
+      <td class="rank-num ${rnk}">${i+1}</td>
+      <td class="player-name">${p.name}</td>
+      <td style="color:var(--muted)">${p.played}</td>
+      <td style="color:var(--green);font-weight:600">${p.wins}</td>
+      <td style="color:var(--red)">${p.losses}</td>
+      <td style="color:${pctCol};font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;">${p.pct}%</td>
+      <td>${diff}</td>
+      <td><div class="form-dots">${form}</div></td>
+      <td>${streak}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- H2H REVAMP ----
+function calcH2HData() {
+  const ps = S.players;
+  const h2h = {};
+  ps.forEach(p => { h2h[p] = {}; ps.forEach(q => h2h[p][q] = {w:0,l:0,lw:0,ll:0,matches:[]}); });
+  S.results.forEach(r => {
+    if (r.noWinner) return;
+    if (!h2h[r.winner] || !h2h[r.winner][r.loser]) return;
+    h2h[r.winner][r.loser].w++;
+    h2h[r.winner][r.loser].lw += r.sw;
+    h2h[r.winner][r.loser].ll += r.sl;
+    h2h[r.winner][r.loser].matches.push({winner:r.winner,loser:r.loser,sw:r.sw,sl:r.sl,date:r.date});
+    h2h[r.loser][r.winner].l++;
+    h2h[r.loser][r.winner].lw += r.sl;
+    h2h[r.loser][r.winner].ll += r.sw;
+    h2h[r.loser][r.winner].matches.push({winner:r.winner,loser:r.loser,sw:r.sw,sl:r.sl,date:r.date});
+  });
+  return h2h;
+}
+
+function renderH2H() {
+  const ps = S.players;
+  if (!ps.length) { document.getElementById('h2h-el').innerHTML = '<p style="color:var(--muted);padding:1rem;">Geen spelers</p>'; return; }
+  const h2h = calcH2HData();
+
+  let html = '<table class="h2h-table"><thead><tr><th style="text-align:left;min-width:100px;">↓ vs →</th>';
+  ps.forEach(p => html += `<th>${p}</th>`);
+  html += '</tr></thead><tbody>';
+
+  ps.forEach(rp => {
+    html += `<tr><td class="row-header">${rp}</td>`;
+    ps.forEach(cp => {
+      if (rp === cp) {
+        html += `<td><div class="h2h-cell h2h-cell-self"><span style="color:var(--border2);font-size:18px;">—</span></div></td>`;
+        return;
+      }
+      const d = h2h[rp][cp];
+      const total = d.w + d.l;
+      if (!total) {
+        html += `<td><div class="h2h-cell h2h-cell-empty"><span class="h2h-score-big empty">·</span></div></td>`;
+        return;
+      }
+      const pct = Math.round(d.w / total * 100);
+      const isWin = d.w > d.l;
+      const isLoss = d.l > d.w;
+      const cellCls = isWin ? 'h2h-cell-win' : isLoss ? 'h2h-cell-loss' : 'h2h-cell-even';
+      const scoreCls = isWin ? 'win' : isLoss ? 'loss' : 'even';
+      const legDiff = d.lw - d.ll;
+      const legStr = `${d.lw}–${d.ll}`;
+      html += `<td><div class="h2h-cell ${cellCls}" onclick="showH2HModal('${rp}','${cp}')">
+        <span class="h2h-score-big ${scoreCls}">${d.w}–${d.l}</span>
+        <span class="h2h-leg-ratio">legs ${legStr}</span>
+        <span class="h2h-pct ${scoreCls}">${pct}%</span>
+      </div></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('h2h-el').innerHTML = html;
+}
+
+function showH2HModal(p1, p2) {
+  const h2h = calcH2HData();
+  const d12 = h2h[p1][p2];
+  const d21 = h2h[p2][p1];
+  const total = d12.w + d12.l;
+
+  const legDiff12 = d12.lw - d12.ll;
+  const legDiff21 = d21.lw - d21.ll;
+
+  document.getElementById('h2h-modal-title').textContent = `${p1} vs ${p2}`;
+
+  let body = `
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;text-align:center;margin-bottom:1.5rem;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;color:${d12.w>d12.l?'var(--green)':d12.w<d12.l?'var(--red)':'var(--accent)'};">${d12.w}</div>
+        <div style="font-size:12px;color:var(--muted);">overwinningen</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;margin-top:6px;">${d12.lw} legs gewonnen</div>
+        <div style="font-size:12px;color:${legDiff12>=0?'var(--green)':'var(--red)'};">leg saldo: ${legDiff12>0?'+':''}${legDiff12}</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:24px;color:var(--muted);">vs</div>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;color:${d21.w>d21.l?'var(--green)':d21.w<d21.l?'var(--red)':'var(--accent)'};">${d21.w}</div>
+        <div style="font-size:12px;color:var(--muted);">overwinningen</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;margin-top:6px;">${d21.lw} legs gewonnen</div>
+        <div style="font-size:12px;color:${legDiff21>=0?'var(--green)':'var(--red)'};">leg saldo: ${legDiff21>0?'+':''}${legDiff21}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:1rem;">${total} wedstrijd${total!==1?'en':''} gespeeld</div>`;
+
+  if (d12.matches.length) {
+    body += `<div style="font-size:12px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Wedstrijden</div>`;
+    const sorted = [...d12.matches].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    sorted.forEach(m => {
+      const isP1Win = m.winner === p1;
+      body += `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:${isP1Win?700:400};color:${isP1Win?'var(--green)':'var(--muted)'};">${m.winner}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;color:var(--accent);background:rgba(232,200,64,0.1);padding:2px 10px;border-radius:4px;">${m.sw}–${m.sl}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;color:var(--muted);">${m.loser}</span>
+        <span style="font-size:11px;color:var(--muted);">${m.date ? new Date(m.date).toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) : '—'}</span>
+      </div>`;
+    });
+  }
+
+  document.getElementById('h2h-modal-body').innerHTML = body;
+  document.getElementById('h2h-modal-overlay').classList.add('open');
+}
+
+function closeH2HModal(e) {
+  if (e.target === document.getElementById('h2h-modal-overlay')) {
+    document.getElementById('h2h-modal-overlay').classList.remove('open');
+  }
+}
+
+// ---- LOCATIES ----
+function renderLocaties() {
+  const venueData = {};
+  S.results.forEach(r => {
+    if (r.noWinner) return;
+    const v = r.venue || '(onbekend)';
+    if (!venueData[v]) venueData[v] = {count:0, wins:{}, played:{}};
+    venueData[v].count++;
+    venueData[v].wins[r.winner] = (venueData[v].wins[r.winner]||0)+1;
+    [r.winner,r.loser].forEach(p => venueData[v].played[p] = (venueData[v].played[p]||0)+1);
+  });
+
+  let html = '';
+  if (!Object.keys(venueData).length) {
+    html = '<p style="color:var(--muted)">Nog geen resultaten met locatie.</p>';
+  } else {
+    html += `<div class="metric-row">
+      <div class="metric"><div class="metric-label">Locaties</div><div class="metric-value accent">${Object.keys(venueData).filter(v=>v!=='(onbekend)').length}</div></div>
+      <div class="metric"><div class="metric-label">Wedstrijden</div><div class="metric-value">${S.results.filter(r=>!r.noWinner).length}</div></div>
+    </div>`;
+    html += '<div class="venue-grid">';
+    Object.entries(venueData).sort((a,b)=>b[1].count-a[1].count).forEach(([v, d]) => {
+      const king = Object.entries(d.wins).sort((a,b)=>b[1]-a[1])[0];
+      const topPlayers = Object.entries(d.played).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      html += `<div class="venue-card">
+        <div class="venue-name">📍 ${v}</div>
+        <div class="venue-count">${d.count} wedstrijd${d.count!==1?'en':''}</div>
+        ${king ? `<div class="venue-king">👑 Beste: ${king[0]} (${king[1]}W)</div>` : ''}
+        <div style="margin-top:10px;font-size:12px;color:var(--muted);">Meest gespeeld:<br>${topPlayers.map(([p,n])=>`${p} (${n}x)`).join(', ')}</div>
+      </div>`;
+    });
+    html += '</div>';
+    html += '<div style="margin-top:1.5rem;" class="card">';
+    html += '<div class="card-title">Speler per locatie</div>';
+    html += '<div class="table-wrap"><table><thead><tr><th>Speler</th>';
+    const venues = Object.keys(venueData).filter(v=>v!=='(onbekend)');
+    venues.forEach(v => html += `<th>${v}</th>`);
+    html += '</tr></thead><tbody>';
+    S.players.forEach(p => {
+      html += `<tr><td class="player-name" style="font-size:15px;">${p}</td>`;
+      venues.forEach(v => {
+        const res = S.results.filter(r => !r.noWinner && r.venue===v && (r.winner===p||r.loser===p));
+        const wins = res.filter(r=>r.winner===p).length;
+        const played = res.length;
+        if (!played) { html += '<td style="color:var(--border2)">—</td>'; return; }
+        const pct = Math.round(wins/played*100);
+        const col = pct>=60?'var(--green)':pct<=40?'var(--red)':'var(--text)';
+        html += `<td style="color:${col};font-family:'Barlow Condensed',sans-serif;font-size:15px;">${wins}/${played} <span style="color:var(--muted);font-size:12px;">(${pct}%)</span></td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+  document.getElementById('locaties-el').innerHTML = html;
+}
+
+// ---- GRAFIEKEN ----
+const PLAYER_COLORS = ['#e8c840','#4ade80','#60a5fa','#f87171','#fb923c','#c084fc','#34d399','#f472b6'];
+let activeChartTab = 'winpct';
+let hiddenPlayers = new Set();
+
+function showTip(e, lines) {
+  const t = document.getElementById('chart-tooltip');
+  t.innerHTML = lines.join('<br>');
+  t.style.opacity = '1';
+  t.style.left = (e.clientX + 14) + 'px';
+  t.style.top = (e.clientY - 40) + 'px';
+}
+function hideTip() { document.getElementById('chart-tooltip').style.opacity = '0'; }
+
+function buildSVG(dates, seriesArr, yLabel, yMin, yMax, formatY) {
+  const W = Math.max(600, dates.length * 80);
+  const H = 280;
+  const padL = 52, padR = 20, padT = 20, padB = 50;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const yRange = yMax - yMin || 1;
+  const yScale = v => padT + chartH - ((v - yMin) / yRange * chartH);
+  const xScale = i => dates.length > 1 ? padL + (i / (dates.length - 1)) * chartW : padL + chartW / 2;
+  const formatDate = d => new Date(d).toLocaleDateString('nl-NL', {day:'numeric', month:'short'});
+
+  const steps = 5;
+  let svgContent = '';
+  for (let i = 0; i <= steps; i++) {
+    const v = yMin + (yMax - yMin) * i / steps;
+    const y = yScale(v);
+    svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    svgContent += `<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#7b82a0" font-family="Barlow Condensed, sans-serif">${formatY(v)}</text>`;
+  }
+  dates.forEach((d, i) => {
+    const x = xScale(i);
+    svgContent += `<text x="${x}" y="${H-8}" text-anchor="middle" font-size="11" fill="#7b82a0" font-family="Barlow Condensed, sans-serif" transform="rotate(-30,${x},${H-8})">${formatDate(d)}</text>`;
+  });
+
+  seriesArr.forEach(({name, color, points, tipLines}) => {
+    if (hiddenPlayers.has(name)) return;
+    const pts = points.map((v,i) => v !== null ? {x:xScale(i), y:yScale(v), v, i} : null).filter(Boolean);
+    if (pts.length < 1) return;
+    if (pts.length > 1) {
+      const d = pts.map((pt,j) => `${j===0?'M':'L'}${pt.x},${pt.y}`).join(' ');
+      svgContent += `<path d="${d}" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`;
+    }
+    pts.forEach((pt, j) => {
+      const tip = tipLines[pt.i].replace(/'/g, '&#39;');
+      svgContent += `<circle cx="${pt.x}" cy="${pt.y}" r="4.5" fill="${color}" stroke="#0f1117" stroke-width="2"
+        onmousemove="showTip(event,['${tip}'])" onmouseleave="hideTip()" style="cursor:pointer"/>`;
+    });
+  });
+
+  return `<svg width="${W}" height="${H}">${svgContent}</svg>`;
+}
+
+function calcChartData(type) {
+  const dates = [...new Set(S.results.filter(r=>r.date&&!r.noWinner).map(r=>r.date))].sort();
+  if (dates.length < 1) return null;
+
+  const series = S.players.map((p, pi) => {
+    const color = PLAYER_COLORS[pi % PLAYER_COLORS.length];
+    const points = [];
+    const tipLines = [];
+
+    dates.forEach((date, idx) => {
+      const upTo = dates.slice(0, idx+1);
+      const res = S.results.filter(r => !r.noWinner && r.date && upTo.includes(r.date) && (r.winner===p||r.loser===p));
+      const wins = res.filter(r=>r.winner===p).length;
+      const played = res.length;
+      const lw = res.reduce((a,r)=>a+(r.winner===p?r.sw:r.sl),0);
+      const ll = res.reduce((a,r)=>a+(r.winner===p?r.sl:r.sw),0);
+
+      if (!played) { points.push(null); tipLines.push(''); return; }
+
+      let val = null;
+      let tip = `<strong style="font-family:Barlow Condensed,sans-serif;font-size:15px;">${p}</strong>`;
+
+      if (type === 'winpct') {
+        val = Math.round(wins/played*100);
+        tip += `<br><span style="color:#e8c840">${val}%</span> na ${played} wedstrijden`;
+      } else if (type === 'legpct') {
+        val = (lw+ll) > 0 ? Math.round(lw/(lw+ll)*100) : null;
+        tip += `<br>Leg%: <span style="color:#e8c840">${val}%</span>`;
+      } else if (type === 'legdiff') {
+        val = lw - ll;
+        tip += `<br>Leg saldo: <span style="color:#e8c840">${val>0?'+':''}${val}</span>`;
+      } else if (type === 'winsabs') {
+        val = wins;
+        tip += `<br>Gewonnen: <span style="color:#4ade80">${wins}</span> / ${played}`;
+      }
+      tip += `<br><span style="color:#7b82a0;font-size:11px;">${new Date(date).toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'})}</span>`;
+      points.push(val);
+      tipLines.push(tip);
+    });
+    return {name: p, color, points, tipLines};
+  });
+
+  return {dates, series};
+}
+
+function renderChartByType(type) {
+  const result = calcChartData(type);
+  if (!result || result.dates.length < 1) return '<p style="color:var(--muted);font-size:14px;">Nog geen sessies ingevoerd.</p>';
+
+  const {dates, series} = result;
+  const configs = {
+    winpct: {label:'W%', min:0, max:100, fmt: v => Math.round(v)+'%'},
+    legpct: {label:'Leg%', min:0, max:100, fmt: v => Math.round(v)+'%'},
+    legdiff: {label:'Leg saldo', min: null, max: null, fmt: v => (v>0?'+':'')+Math.round(v)},
+    winsabs: {label:'Overwinningen', min:0, max:null, fmt: v => Math.round(v)},
+  };
+  const cfg = configs[type];
+
+  // Compute dynamic min/max
+  let allVals = series.flatMap(s => s.points.filter(v=>v!==null));
+  let yMin = cfg.min !== null ? cfg.min : (allVals.length ? Math.min(...allVals) - 1 : 0);
+  let yMax = cfg.max !== null ? cfg.max : (allVals.length ? Math.max(...allVals) + 1 : 10);
+
+  const svg = buildSVG(dates, series, cfg.label, yMin, yMax, cfg.fmt);
+  const legend = S.players.map((p, pi) => {
+    const color = PLAYER_COLORS[pi % PLAYER_COLORS.length];
+    const dimmed = hiddenPlayers.has(p) ? 'dimmed' : '';
+    return `<div class="legend-item ${dimmed}" onclick="togglePlayer('${p}')" style="border-color:${hiddenPlayers.has(p)?'transparent':color+'44'};">
+      <div class="legend-dot" style="background:${color};opacity:${hiddenPlayers.has(p)?0.3:1};"></div>
+      <span>${p}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="chart-container">${svg}</div><div class="chart-legend">${legend}</div>`;
+}
+
+function togglePlayer(name) {
+  if (hiddenPlayers.has(name)) hiddenPlayers.delete(name);
+  else hiddenPlayers.add(name);
+  renderStats();
+}
+
+function switchChartTab(type) {
+  activeChartTab = type;
+  renderStats();
+}
+
+// ---- STATS ----
+function renderStats() {
+  const stats = calcStats();
+  const list = sorted(stats);
+  if (!S.results.length) { document.getElementById('stats-el').innerHTML = '<p style="color:var(--muted)">Voer eerst resultaten in.</p>'; return; }
+
+  const totalGames = S.results.filter(r=>!r.noWinner).length;
+  const totalSessions = new Set(S.results.filter(r=>r.date).map(r=>r.date)).size;
+  const top = list[0];
+  const bestStreak = [...list].filter(p=>p.streak?.type==='W').sort((a,b)=>b.streak.n-a.streak.n)[0];
+  const bestLegPct = [...list].filter(p=>(p.lw+p.ll)>0).sort((a,b)=>b.legPct-a.legPct)[0];
+  const mostPlayed = [...list].sort((a,b)=>b.played-a.played)[0];
+  const highestDiff = [...list].sort((a,b)=>b.diff-a.diff)[0];
+
+  let html = `<div class="metric-row">
+    <div class="metric"><div class="metric-label">Wedstrijden</div><div class="metric-value accent">${totalGames}</div></div>
+    <div class="metric"><div class="metric-label">Avonden</div><div class="metric-value">${totalSessions}</div></div>
+    <div class="metric"><div class="metric-label">Koploper</div><div class="metric-value" style="font-size:20px;">${top.name} <span style="font-size:16px;color:var(--muted)">${top.pct}%</span></div></div>
+    ${bestLegPct?`<div class="metric"><div class="metric-label">Beste Leg%</div><div class="metric-value" style="font-size:20px;">${bestLegPct.name} <span style="font-size:16px;color:var(--muted)">${bestLegPct.legPct}%</span></div></div>`:''}
+    ${bestStreak?`<div class="metric"><div class="metric-label">Langste reeks</div><div class="metric-value" style="font-size:20px;">${bestStreak.name} <span style="font-size:16px;color:var(--green)">W${bestStreak.streak.n}</span></div></div>`:''}
+    ${highestDiff&&highestDiff.diff>0?`<div class="metric"><div class="metric-label">Beste leg saldo</div><div class="metric-value" style="font-size:20px;">${highestDiff.name} <span style="font-size:16px;color:var(--green)">+${highestDiff.diff}</span></div></div>`:''}
+  </div>`;
+
+  // Grafiek tabs
+  const tabs = [
+    {id:'winpct', label:'Winpercentage'},
+    {id:'legpct', label:'Leg%'},
+    {id:'legdiff', label:'Leg saldo'},
+    {id:'winsabs', label:'Gewonnen'},
+  ];
+  html += `<div class="card" style="margin-bottom:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="card-title" style="margin-bottom:0;">Verloop over tijd</div>
+      <div class="chart-tabs">
+        ${tabs.map(t=>`<button class="chart-tab${activeChartTab===t.id?' active':''}" onclick="switchChartTab('${t.id}')">${t.label}</button>`).join('')}
+      </div>
+    </div>
+    ${renderChartByType(activeChartTab)}
+  </div>`;
+
+  // Volledig overzicht
+  html += '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Volledig overzicht</div><div class="table-wrap"><table>';
+  html += '<thead><tr><th>Speler</th><th>Gespeeld</th><th>W</th><th>V</th><th>W%</th><th>Legs W</th><th>Legs V</th><th>Leg%</th><th>Leg saldo</th></tr></thead><tbody>';
+  list.forEach(p => {
+    const diff = p.diff > 0 ? `<span style="color:var(--green)">+${p.diff}</span>` : p.diff < 0 ? `<span style="color:var(--red)">${p.diff}</span>` : '0';
+    const legPctCol = p.legPct >= 55 ? 'var(--green)' : p.legPct <= 45 ? 'var(--red)' : 'var(--text)';
+    const pctCol = p.pct >= 60 ? 'var(--green)' : p.pct <= 40 ? 'var(--red)' : 'var(--text)';
+    html += `<tr>
+      <td class="player-name" style="font-size:16px;">${p.name}</td>
+      <td>${p.played}</td>
+      <td style="color:var(--green);font-weight:600">${p.wins}</td>
+      <td style="color:var(--red)">${p.losses}</td>
+      <td style="color:${pctCol};font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;">${p.pct}%</td>
+      <td>${p.lw}</td><td>${p.ll}</td>
+      <td style="color:${legPctCol};font-family:'Barlow Condensed',sans-serif;">${p.legPct}%</td>
+      <td>${diff}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div></div>';
+
+  // Recente vorm
+  html += '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Recente vorm (laatste 10)</div>';
+  list.forEach(p => {
+    if (!p.played) return;
+    const r10 = p.results.slice(-10);
+    const wct = r10.filter(r=>r==='W').length;
+    html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;min-width:70px;">${p.name}</span>
+      <div style="display:flex;gap:4px;">${r10.map(r=>`<span class="badge badge-${r==='W'?'w':'l'}">${r}</span>`).join('')}</div>
+      <span style="font-size:12px;color:var(--muted);margin-left:4px;">${wct}/${r10.length}</span>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Onderlinge balans samenvatting
+  html += '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Onderlinge balans</div>';
+  list.forEach(p => {
+    if (!p.played) return;
+    const opps = Object.entries(p.opponents).filter(([,d])=>d.w+d.l>0).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l));
+    if (!opps.length) return;
+    html += `<div style="margin-bottom:14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;">${p.name}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${opps.map(([opp, d]) => {
+          const total = d.w + d.l;
+          const pct = Math.round(d.w/total*100);
+          const bg = pct>50?'rgba(74,222,128,0.12)':pct<50?'rgba(248,113,113,0.1)':'rgba(232,200,64,0.08)';
+          const col = pct>50?'var(--green)':pct<50?'var(--red)':'var(--accent)';
+          return `<div style="background:${bg};border-radius:6px;padding:5px 10px;font-size:13px;">
+            <span style="color:var(--muted)">vs ${opp}: </span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${col};">${d.w}–${d.l}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Dagwinnaar teller
+  const dagList = calcDagwinnaars();
+  const dagTeller = {};
+  dagList.forEach(({winners}) => winners.forEach(w => dagTeller[w] = (dagTeller[w]||0)+1));
+  if (Object.keys(dagTeller).length) {
+    html += '<div class="card"><div class="card-title">Dagwinnaars teller</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+    Object.entries(dagTeller).sort((a,b)=>b[1]-a[1]).forEach(([name, n]) => {
+      html += `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--r);padding:10px 16px;">
+        <span style="font-size:20px;">🏆</span>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;">${name}</div>
+          <div style="font-size:12px;color:var(--muted);">${n} avond${n!==1?'en':''} gewonnen</div>
+        </div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  document.getElementById('stats-el').innerHTML = html;
+}
+
+// ---- INVOER ----
+function renderInvoer() {
+  const fill = (id, cur) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const prev = sel.value || cur;
+    sel.innerHTML = S.players.map(p=>`<option value="${p}">${p}</option>`).join('');
+    if (S.players.includes(prev)) sel.value = prev;
+  };
+  fill('inp-winner'); fill('inp-loser');
+  fill('inp-p1'); fill('inp-p2');
+
+  const sW = document.getElementById('inp-winner');
+  const sL = document.getElementById('inp-loser');
+  if (sW && sL && sW.value === sL.value && S.players.length > 1) sL.value = S.players.find(p=>p!==sW.value)||'';
+
+  const sP1 = document.getElementById('inp-p1');
+  const sP2 = document.getElementById('inp-p2');
+  if (sP1 && sP2 && sP1.value === sP2.value && S.players.length > 1) sP2.value = S.players.find(p=>p!==sP1.value)||'';
+
+  const vOpts = S.venues.map(v=>`<option value="${v}">`).join('');
+  document.getElementById('venue-list').innerHTML = vOpts;
+
+  document.getElementById('player-chips').innerHTML = S.players.map(p =>
+    `<div class="player-chip">${p} <button onclick="removePlayer('${p}')">×</button></div>`
+  ).join('');
+
+  document.getElementById('venue-chips').innerHTML = S.venues.map(v =>
+    `<div class="player-chip">📍 ${v} <button onclick="removeVenue('${encodeURIComponent(v)}')">×</button></div>`
+  ).join('');
+}
+
+// ---- HISTORY ----
+function renderHistory() {
+  const fp = document.getElementById('filter-player').value;
+  const fv = document.getElementById('filter-venue').value;
+
+  document.getElementById('filter-player').innerHTML = '<option value="">Alle spelers</option>' +
+    S.players.map(p=>`<option value="${p}" ${fp===p?'selected':''}>${p}</option>`).join('');
+  document.getElementById('filter-venue').innerHTML = '<option value="">Alle locaties</option>' +
+    S.venues.map(v=>`<option value="${v}" ${fv===v?'selected':''}>${v}</option>`).join('');
+
+  let res = [...S.results].reverse();
+  if (fp) res = res.filter(r => r.winner===fp || r.loser===fp || r.p1===fp || r.p2===fp);
+  if (fv) res = res.filter(r => r.venue===fv);
+
+  if (!res.length) { document.getElementById('history-el').innerHTML = '<p style="color:var(--muted);padding:1rem 0;">Geen resultaten gevonden.</p>'; return; }
+
+  document.getElementById('history-el').innerHTML = res.map((r) => {
+    const origIdx = S.results.findIndex(x => x===r);
+    if (r.noWinner) {
+      return `<div class="history-item">
+        <div class="history-date">${r.date||'—'}</div>
+        ${r.venue ? `<div class="history-venue">📍 ${r.venue}</div>` : ''}
+        <div class="history-match">
+          <span class="history-winner">${r.p1}</span>
+          <span class="history-score">${r.s1} – ${r.s2}</span>
+          <span class="history-loser">${r.p2}</span>
+          <span class="badge badge-draw" style="margin-left:4px;">vrij potje</span>
+        </div>
+        <button class="del-btn" onclick="delResult(${origIdx})" title="Verwijder">×</button>
+      </div>`;
+    }
+    return `<div class="history-item">
+      <div class="history-date">${r.date||'—'}</div>
+      ${r.venue ? `<div class="history-venue">📍 ${r.venue}</div>` : ''}
+      <div class="history-match">
+        <span class="history-winner">${r.winner}</span>
+        <span class="history-score">${r.sw} – ${r.sl}</span>
+        <span class="history-loser">${r.loser}</span>
+      </div>
+      <button class="del-btn" onclick="delResult(${origIdx})" title="Verwijder">×</button>
+    </div>`;
+  }).join('');
+}
+
+// ---- TOURNAMENT QUEUE ----
+let matchQueue = [];
+
+function queueMatch() {
+  const noWinner = document.getElementById('inp-no-winner').checked;
+  const msg = document.getElementById('queue-msg');
+  let entry;
+  if (noWinner) {
+    const p1 = document.getElementById('inp-p1').value;
+    const p2 = document.getElementById('inp-p2').value;
+    const s1 = parseInt(document.getElementById('inp-s1').value);
+    const s2 = parseInt(document.getElementById('inp-s2').value);
+    if (p1===p2) { msg.style.color='var(--red)'; msg.textContent='Twee verschillende spelers nodig.'; return; }
+    entry = { noWinner: true, p1, p2, s1: isNaN(s1)?0:s1, s2: isNaN(s2)?0:s2 };
+  } else {
+    const winner = document.getElementById('inp-winner').value;
+    const loser = document.getElementById('inp-loser').value;
+    const sw = parseInt(document.getElementById('inp-sw').value);
+    const sl = parseInt(document.getElementById('inp-sl').value);
+    if (winner===loser) { msg.style.color='var(--red)'; msg.textContent='Winnaar en verliezer mogen niet hetzelfde zijn.'; return; }
+    if (isNaN(sw)||sw<1) { msg.style.color='var(--red)'; msg.textContent='Vul een geldige score in.'; return; }
+    entry = { winner, loser, sw, sl: isNaN(sl)?0:sl };
+  }
+  matchQueue.push(entry);
+  msg.style.color='var(--green)'; msg.textContent='Toegevoegd ✓';
+  setTimeout(()=>msg.textContent='', 1500);
+  renderQueue();
+}
+
+function removeFromQueue(idx) {
+  matchQueue.splice(idx, 1);
+  renderQueue();
+}
+
+function renderQueue() {
+  const el = document.getElementById('queue-list');
+  const countEl = document.getElementById('queue-count');
+  countEl.textContent = matchQueue.length;
+  if (!matchQueue.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0;">Nog geen wedstrijden toegevoegd.</p>';
+    document.getElementById('dag-preview').style.display = 'none';
+    return;
+  }
+  el.innerHTML = matchQueue.map((m, i) => {
+    const text = m.noWinner
+      ? `<span style="color:var(--muted);font-size:12px;">[vrij]</span> ${m.p1} <span style="color:var(--accent);">${m.s1}–${m.s2}</span> ${m.p2}`
+      : `<span style="font-weight:600;font-family:'Barlow Condensed',sans-serif;font-size:17px;">${m.winner}</span> <span style="color:var(--accent);font-family:'Barlow Condensed',sans-serif;">${m.sw}–${m.sl}</span> <span style="color:var(--muted);font-family:'Barlow Condensed',sans-serif;">${m.loser}</span>`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div>${text}</div>
+      <button class="del-btn" onclick="removeFromQueue(${i})" title="Verwijder">×</button>
+    </div>`;
+  }).join('');
+
+  const winCounts = {};
+  matchQueue.forEach(m => { if (!m.noWinner) winCounts[m.winner] = (winCounts[m.winner]||0) + 1; });
+  const previewEl = document.getElementById('dag-preview');
+  const previewContent = document.getElementById('dag-preview-content');
+  if (Object.keys(winCounts).length) {
+    const max = Math.max(...Object.values(winCounts));
+    const leaders = Object.entries(winCounts).filter(([,n])=>n===max).map(([p])=>p);
+    const scoreStr = Object.entries(winCounts).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`${p}: ${n}W`).join(' · ');
+    previewContent.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin-top:0.5rem;">
+      <div style="font-size:28px;">${leaders.length > 1 ? '🤝' : '🏆'}</div>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;">${leaders.join(' & ')}</div>
+        <div style="font-size:12px;color:var(--muted);">${scoreStr}</div>
+      </div>
+    </div>`;
+    previewEl.style.display = 'block';
+  } else {
+    previewEl.style.display = 'none';
+  }
+}
+
+function saveSession() {
+  const msg = document.getElementById('inp-msg');
+  if (!matchQueue.length) { msg.style.color='var(--red)'; msg.textContent='Voeg eerst wedstrijden toe.'; return; }
+  const date = document.getElementById('inp-date').value;
+  const venue = document.getElementById('inp-venue').value.trim();
+  matchQueue.forEach(m => S.results.push({ ...m, date, venue }));
+  if (venue && !S.venues.includes(venue)) S.venues.push(venue);
+  save();
+  const n = matchQueue.length;
+  matchQueue = [];
+  msg.style.color='var(--green)'; msg.textContent=`${n} wedstrijd${n!==1?'en':''} opgeslagen ✓`;
+  setTimeout(()=>msg.textContent='', 3000);
+  renderQueue();
+  render();
+}
+
+function addPlayer() {
+  const v = document.getElementById('inp-player').value.trim();
+  if (!v||S.players.includes(v)) return;
+  S.players.push(v);
+  document.getElementById('inp-player').value='';
+  save(); renderInvoer();
+}
+
+function removePlayer(name) {
+  if (S.results.some(r=>r.winner===name||r.loser===name||r.p1===name||r.p2===name)) {
+    if (!confirm(`${name} heeft al wedstrijden gespeeld. Toch verwijderen?`)) return;
+  }
+  S.players = S.players.filter(p=>p!==name);
+  save(); renderInvoer();
+}
+
+function addVenue() {
+  const v = document.getElementById('inp-venue-add').value.trim();
+  if (!v||S.venues.includes(v)) return;
+  S.venues.push(v);
+  document.getElementById('inp-venue-add').value='';
+  save(); renderInvoer();
+}
+
+function removeVenue(encoded) {
+  const name = decodeURIComponent(encoded);
+  S.venues = S.venues.filter(v=>v!==name);
+  save(); renderInvoer();
+}
+
+function delResult(idx) {
+  if (!confirm('Uitslag verwijderen?')) return;
+  S.results.splice(idx,1);
+  save(); render();
+}
+
+// ---- RENDER ALL ----
+function render() {
+  renderStand();
+  renderH2H();
+  renderLocaties();
+  renderStats();
+  renderInvoer();
+  renderHistory();
+}
+
+document.getElementById('inp-date').valueAsDate = new Date();
+render();
+</script>
+</body>
+</html>
